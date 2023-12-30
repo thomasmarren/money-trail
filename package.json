@@ -9,17 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.15.5",
     "@tremor/react": "^3.12.1",
     "better-sqlite3": "^9.2.2",
+    "csvtojson": "^2.0.10",
     "drizzle-orm": "^0.29.2",
     "next": "14.0.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^5.14.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.7",
     "autoprefixer": "^10.0.1",
     "drizzle-kit": "^0.20.9",
     "eslint": "^8",

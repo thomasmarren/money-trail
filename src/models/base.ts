@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import db from "../db";
@@ -14,21 +15,36 @@ export class BaseModel<
   }
 
   public async all() {
-    const all = await db.select().from(this.model as unknown as SQLiteTable);
+    const records = await db
+      .select()
+      .from(this.model as unknown as SQLiteTable);
 
-    return all as TModel["$inferSelect"][];
+    return records as TModel["$inferSelect"][];
+  }
+
+  public async findOrCreate(id: string, data: TModel["$inferInsert"]) {
+    let [record] = await db
+      .select()
+      .from(this.model as unknown as SQLiteTable)
+      .where(eq(this.model.id, id));
+
+    if (record) return record;
+
+    record = await this.create({ id, ...data });
+
+    return record;
   }
 
   public async create(data: TModel["$inferInsert"]) {
-    const insert = await db
+    const records = await db
       .insert(this.model as unknown as SQLiteTable)
       .values(data)
       .returning();
-    return insert[0] as TModel["$inferSelect"];
+    return records[0] as TModel["$inferSelect"];
   }
 
   public async upsert(data: TModel["$inferInsert"]) {
-    const insert = await db
+    const records = await db
       .insert(this.model as unknown as SQLiteTable)
       .values(data)
       .onConflictDoUpdate({
@@ -36,6 +52,40 @@ export class BaseModel<
         set: data,
       })
       .returning();
-    return insert[0] as TModel["$inferSelect"];
+    return records[0] as TModel["$inferSelect"];
+  }
+
+  public async createOrUpdate({
+    id,
+    create,
+    update,
+  }: {
+    id: string;
+    create: TModel["$inferInsert"];
+    update: Partial<TModel["$inferInsert"]>;
+  }) {
+    let [record] = await db
+      .select()
+      .from(this.model as unknown as SQLiteTable)
+      .where(eq(this.model.id, id));
+
+    if (record) {
+      record = await this.update(id, update);
+      return record;
+    }
+
+    record = await this.create({ id, ...create });
+
+    return record;
+  }
+
+  public async update(id: string, data: Partial<TModel["$inferInsert"]>) {
+    const record = await db
+      .update(this.model as unknown as SQLiteTable)
+      .set(data)
+      .where(eq(this.model.id, id))
+      .returning({ id: this.model.id });
+
+    return record as TModel["$inferSelect"];
   }
 }

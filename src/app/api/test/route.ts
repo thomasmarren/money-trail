@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
-import { Account } from "../../../models/account";
+import { Transaction } from "../../../models/transaction";
 
 export async function GET() {
-  const accounts = await new Account().all();
+  const transactions = await new Transaction().all();
 
-  return NextResponse.json(accounts);
+  for (const transaction of transactions) {
+    const id = Buffer.from(JSON.stringify(transaction)).toString("base64");
+    await new Transaction().update(transaction.id, { id });
+  }
+
+  return NextResponse.json(transactions);
 }
