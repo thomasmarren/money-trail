@@ -1,5 +1,5 @@
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
-import { get } from "./methods";
+import { HttpClient } from "./http-client";
 
 export const useApiGet = <T extends unknown>(
   path: string,
@@ -7,7 +7,7 @@ export const useApiGet = <T extends unknown>(
 ) => {
   return useQuery<T>({
     queryKey: [path],
-    queryFn: () => get(path),
+    queryFn: () => HttpClient.get(path),
     initialData: [] as T,
     ...options,
   });

@@ -1,12 +1,5 @@
 import { Card, Title, BarChart } from "@tremor/react";
 
-const chartdata = [
-  {
-    name: "Amphibians",
-    "Number of threatened species": 2488,
-  },
-];
-
 const valueFormatter = (number: number) =>
   `$ ${new Intl.NumberFormat("us").format(number).toString()}`;
 
@@ -24,9 +17,6 @@ export const CashFlowChart = ({
       Spend: spend,
     },
   ];
-
-  console.log(income);
-  console.log(spend);
 
   return (
     <Card className="max-w-xl">
