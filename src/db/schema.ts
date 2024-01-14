@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
-import { integer, text, sqliteTable } from "drizzle-orm/sqlite-core";
+import {
+  pgTable,
+  integer,
+  text,
+  jsonb,
+  serial,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 export type RawTransaction = {
   Date: string; //"MM/DD/YYYY";
@@ -19,56 +26,72 @@ export enum TransactionTypeId {
   Income = "income",
 }
 
-const accounts = sqliteTable("accounts", {
+const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
   name: text("name").default("New Account"),
+  cashBackPercent: integer("cashBackPercent").default(0),
   institutionId: text("institutionId")
     .references(() => institutions.id)
     .notNull(),
-  createdAt: text("createdAt").default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
-const institutions = sqliteTable("institutions", {
+const cashBackRules = pgTable("cash_back_rules", {
   id: text("id").primaryKey(),
-  name: text("name").default("New Institution"),
-  createdAt: text("createdAt").default(sql`CURRENT_TIMESTAMP`),
-});
-
-const transactions = sqliteTable("transactions", {
-  id: text("id").primaryKey(),
-  date: text("date").notNull(),
-  amount: integer("amount").notNull(),
-  payload: text("payload", { mode: "json" }).$type<RawTransaction>().notNull(),
+  category: text("category"),
+  descriptionRegex: text("descriptionRegex"),
+  cashBackPercent: integer("cashBackPercent").default(0),
   accountId: text("accountId")
     .references(() => accounts.id)
     .notNull(),
-  createdAt: text("createdAt").default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
-const transactionTypeRules = sqliteTable("transaction_type_rules", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+const institutions = pgTable("institutions", {
+  id: text("id").primaryKey(),
+  name: text("name").default("New Institution"),
+  createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
+});
+
+const transactions = pgTable("transactions", {
+  id: text("id").primaryKey(),
+  date: text("date").notNull(),
+  amount: integer("amount").notNull(),
+  // category: text("category").default("Unknown"),
+  cashBackAmount: integer("cashBackAmount").default(0),
+  cashBackPercent: integer("cashBackPercent"),
+  payload: jsonb("payload").$type<RawTransaction>().notNull(),
+  accountId: text("accountId")
+    .references(() => accounts.id)
+    .notNull(),
+  createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
+});
+
+const transactionTypeRules = pgTable("transaction_type_rules", {
+  id: serial("id").primaryKey(),
   descriptionRegex: text("descriptionRegex").notNull(),
   transactionTypeId: text("transactionTypeId")
     .references(() => transactionTypes.id)
     .notNull(),
-  createdAt: text("createdAt").default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
-const transactionTypes = sqliteTable("transaction_types", {
+const transactionTypes = pgTable("transaction_types", {
   id: text("id").$type<TransactionTypeId>().primaryKey(),
   name: text("name").notNull(),
   color: text("color").notNull(),
-  createdAt: text("createdAt").default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
-const users = sqliteTable("users", {
+const users = pgTable("users", {
   id: text("id").primaryKey(),
   username: text("username").notNull(),
-  createdAt: text("createdAt").default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
 export {
   accounts,
+  cashBackRules,
   institutions,
   transactions,
   transactionTypeRules,

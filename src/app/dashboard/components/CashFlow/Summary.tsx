@@ -11,10 +11,14 @@ import {
 } from "@tremor/react";
 import { TAccount } from "../../../../models/account";
 import { TTransaction } from "../../../../models/transaction";
+import { TTransactionType } from "../../../../models/transaction-type";
 import { filterSpend, filterIncome, filterBills } from "./utils";
 
 type Props = {
-  transactions: (TTransaction & { account: TAccount })[];
+  transactions: (TTransaction & {
+    account: TAccount;
+    type: TTransactionType;
+  })[];
   spend: number;
   income: number;
   range: DateRangePickerValue;
@@ -26,25 +30,29 @@ export const Summary = ({ transactions, range, spend, income }: Props) => {
     currency: "USD",
   });
 
-  const target = 15000;
+  const totalCashBack = transactions.reduce((acc, transaction) => {
+    return (acc += transaction.cashBackAmount || 0);
+  }, 0);
+
   const items = [
     {
       title: "Spend",
       metric: `${formatter.format(spend)}`,
-      progress: Math.round((spend / target) * 100),
-      target: `${formatter.format(target)}`,
     },
     {
       title: "Income",
       metric: `${formatter.format(income)}`,
-      progress: Math.round((income / target) * 100),
-      target: `${formatter.format(target)}`,
     },
     {
       title: "Net",
       metric: `${formatter.format(income - spend)}`,
       progress: Math.round((spend / income) * 100),
+      isCloseToTarget: income - spend < 1000,
       target: `${formatter.format(income)}`,
+    },
+    {
+      title: "Cash Back",
+      metric: `${formatter.format(totalCashBack / 1000)}`,
     },
   ];
 
@@ -93,21 +101,21 @@ export const Summary = ({ transactions, range, spend, income }: Props) => {
                 <Metric className="truncate">{item.metric}</Metric>
               </div>
               <div>
-                {item.title !== "Net" && (
+                {["Spend", "Income"].includes(item.title) && (
                   <Text className="text-xs">Last Month</Text>
                 )}
                 {item.title === "Income" ? (
                   <Badge color={incomeDiff > 0 ? "emerald" : "red"}>
                     {formatter.format(lastMonthIncome)}
                   </Badge>
-                ) : item.title === "Net" ? null : (
-                  <Badge color={spendDiff < 0 ? "emerald" : "red"}>
+                ) : ["Net", "Cash Back"].includes(item.title) ? null : (
+                  <Badge color={spendDiff < 0 ? "amber" : "green"}>
                     {formatter.format(lastMonthSpend)}
                   </Badge>
                 )}
               </div>
             </Flex>
-            {item.title === "Net" && (
+            {item.progress && (
               <>
                 <Flex className="mt-4 space-x-2">
                   <Text className="truncate">{`${item.progress}%`}</Text>
@@ -116,7 +124,7 @@ export const Summary = ({ transactions, range, spend, income }: Props) => {
                 <ProgressBar
                   value={item.progress}
                   className="mt-2"
-                  color={item.progress > 80 ? "red" : "green"}
+                  color={item.isCloseToTarget ? "amber" : "green"}
                 />
               </>
             )}

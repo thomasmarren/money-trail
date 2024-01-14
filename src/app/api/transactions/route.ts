@@ -12,9 +12,9 @@ const parseAmount = (rawAmount: string) => {
   const float = parseFloat(string);
 
   const amount = float * 100;
-  if (rawAmount[0] === "(") return amount;
+  if (rawAmount[0] === "(") return Math.round(amount);
 
-  return -amount;
+  return -Math.round(amount);
 };
 
 const createId = (transaction: RawTransaction) => {
@@ -31,7 +31,7 @@ const createId = (transaction: RawTransaction) => {
 
 export async function GET() {
   try {
-    const transactions = await new Transaction().allWithAccount();
+    const transactions = await new Transaction().all();
 
     return NextResponse.json(transactions);
   } catch (error: any) {
@@ -44,47 +44,47 @@ export async function POST() {
   try {
     let allTransactions: string[] = [];
 
-    const files = fs.readdirSync(`./transactions`);
+    const files = fs.readdirSync(`./transaction-files`);
 
     const transactionFileName = files.find((file) => file !== ".gitkeep");
 
     const transactions = (await csv().fromFile(
-      `./transactions/${transactionFileName}`
+      `./transaction-files/${transactionFileName}`
     )) as RawTransaction[];
 
-    await Promise.all(
-      transactions.map((transaction) => {
-        new Institution()
-          .upsert({
-            id: transaction.Institution,
-          })
-          .then(async () => {
-            return new Account()
-              .upsert({
-                id: transaction.Account,
-                institutionId: transaction.Institution,
-              })
-              .then(() => {
-                const id = createId(transaction);
+    for (const transaction of transactions) {
+      await new Institution().upsert({
+        id: transaction.Institution,
+      });
 
-                return new Transaction().createOrUpdate({
-                  id,
-                  create: {
-                    id,
-                    date: new Date(transaction.Date).toISOString(),
-                    amount: parseAmount(transaction.Amount),
-                    accountId: transaction.Account,
-                    payload: transaction,
-                  },
-                  update: {
-                    amount: parseAmount(transaction.Amount),
-                    payload: transaction,
-                  },
-                });
-              });
-          });
-      })
-    );
+      const account = await new Account().upsert({
+        id: transaction.Account,
+        institutionId: transaction.Institution,
+      });
+
+      const amount = parseAmount(transaction.Amount);
+      const cashBackAmount = account.cashBackPercent
+        ? Math.round(amount * (account.cashBackPercent * 0.01))
+        : 0;
+
+      const id = createId(transaction);
+      await new Transaction().createOrUpdate({
+        id,
+        create: {
+          id,
+          date: new Date(transaction.Date).toISOString(),
+          amount,
+          cashBackAmount,
+          accountId: transaction.Account,
+          payload: transaction,
+        },
+        update: {
+          amount,
+          cashBackAmount,
+          payload: transaction,
+        },
+      });
+    }
 
     return NextResponse.json(allTransactions);
   } catch (error: any) {

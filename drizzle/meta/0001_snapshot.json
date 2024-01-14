@@ -1,6 +1,6 @@
 {
-  "id": "77937ab2-8a69-4ba9-8729-975dc8b62d09",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "4824a911-41da-473d-a060-59f0f08511b9",
+  "prevId": "77937ab2-8a69-4ba9-8729-975dc8b62d09",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -265,6 +265,12 @@
           "primaryKey": false,
           "notNull": false,
           "default": 0
+        },
+        "cashBackPercent": {
+          "name": "cashBackPercent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "payload": {
           "name": "payload",

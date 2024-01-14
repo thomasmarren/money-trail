@@ -2,33 +2,21 @@ import {
   TableRow,
   TableCell,
   DatePicker,
-  Badge,
   DatePickerValue,
 } from "@tremor/react";
 import { TAccount } from "../../../../models/account";
 import { TTransaction } from "../../../../models/transaction";
 import { TTransactionType } from "../../../../models/transaction-type";
-import { useApiGet } from "../../../hooks/useApiGet";
+import { Amount } from "./Amount";
+import { CashBack } from "./CashBack";
+import { Type } from "./Type";
 
 type Props = {
-  item: TTransaction & { account: TAccount; type: TTransactionType };
+  transaction: TTransaction & { account: TAccount; type: TTransactionType };
 };
 
-const Type = ({ item }: Props) => {
-  if (item.type.id) {
-    return <Badge color={item.type.color}>{item.type.name}</Badge>;
-  }
-
-  if (item.amount >= 0) return <Badge color="red">Spend</Badge>;
-
-  return <Badge color="green">Income</Badge>;
-};
-
-export const Row = ({ item }: Props) => {
-  const { refetch } =
-    useApiGet<(TTransaction & { account: TAccount })[]>("/api/transactions");
-
-  const setValue = async ({
+export const Row = ({ transaction }: Props) => {
+  const setDateValue = async ({
     id,
     date,
   }: {
@@ -45,26 +33,33 @@ export const Row = ({ item }: Props) => {
 
   return (
     <TableRow
-      key={item.id}
-      className={item.payload["Is Pending"] === "Yes" ? "bg-slate-100" : ""}
+      key={transaction.id}
+      className={
+        transaction.payload["Is Pending"] === "Yes" ? "bg-slate-100" : ""
+      }
     >
-      <TableCell>
+      <TableCell className="text-left max-w-36 ">
         <DatePicker
           enableClear={false}
-          className="max-w-md mx-auto"
-          value={new Date(item.date)}
-          onValueChange={(date) => setValue({ id: item.id, date })}
+          className="mx-auto"
+          value={new Date(transaction.date)}
+          onValueChange={(date) => setDateValue({ id: transaction.id, date })}
         />
       </TableCell>
-      <TableCell className="text-left">{item.account.name}</TableCell>
-      <TableCell className="text-left max-w-md text-ellipsis overflow-hidden">
-        {item.payload.Description}
+      <TableCell className="text-left max-w-12 truncate">
+        {transaction.account.name}
+      </TableCell>
+      <TableCell className="text-left max-w-36 text-ellipsis overflow-hidden">
+        {transaction.payload.Description}
       </TableCell>
       <TableCell className="text-right">
-        ${Math.abs(item.amount / 100).toFixed(2)}
+        <Amount transaction={transaction} />
+      </TableCell>
+      <TableCell className="text-right max-w-1">
+        <CashBack transaction={transaction} />
       </TableCell>
       <TableCell className="text-right">
-        <Type item={item} />
+        <Type transaction={transaction} />
       </TableCell>
     </TableRow>
   );

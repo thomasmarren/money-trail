@@ -1,12 +1,12 @@
-import { eq } from "drizzle-orm";
+import { eq, SQL } from "drizzle-orm";
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { SQLiteTable } from "drizzle-orm/sqlite-core";
-import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import db from "../db";
 
 export class BaseModel<
   TModel extends { id: any; $inferInsert: any; $inferSelect: any }
 > {
-  db: BetterSQLite3Database<Record<string, never>>;
+  db: PostgresJsDatabase<Record<string, never>>;
   model: TModel;
 
   constructor(model: TModel) {
@@ -20,6 +20,15 @@ export class BaseModel<
       .from(this.model as unknown as SQLiteTable);
 
     return records as TModel["$inferSelect"][];
+  }
+
+  public async findBy(where: SQL<unknown>) {
+    const records = await db
+      .select()
+      .from(this.model as unknown as SQLiteTable)
+      .where(where);
+
+    return records?.[0] as TModel["$inferSelect"];
   }
 
   public async findOrCreate(id: string, data: TModel["$inferInsert"]) {

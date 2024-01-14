@@ -1,12 +1,19 @@
 {
   "version": "5",
-  "dialect": "sqlite",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1703964351084,
-      "tag": "0000_cloudy_ink",
+      "when": 1705166890509,
+      "tag": "0000_shallow_toad",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1705196894314,
+      "tag": "0001_plain_madripoor",
       "breakpoints": true
     }
   ]

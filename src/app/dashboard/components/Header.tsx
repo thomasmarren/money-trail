@@ -1,14 +1,9 @@
-import {
-  DateRangePicker,
-  DateRangePickerItem,
-  DateRangePickerValue,
-} from "@tremor/react";
+import { DateRangePicker, DateRangePickerItem } from "@tremor/react";
+import { useTransactions } from "../../hooks/useTransactions";
 
-type Props = {
-  range: DateRangePickerValue;
-  setRange: (value: DateRangePickerValue) => void;
-};
-export const Header = ({ range, setRange }: Props) => {
+export const Header = () => {
+  const { range, setRange } = useTransactions();
+
   return (
     <div className="flex mb-12">
       <h1 className="text-5xl font-bold">Money Trail</h1>

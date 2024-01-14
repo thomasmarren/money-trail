@@ -1,9 +1,10 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import * as config from "../../drizzle.config";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
-export const database = new Database(config.default.dbCredentials.url);
+if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
 
-const db = drizzle(database);
+// for query purposes
+const queryClient = postgres(process.env.DATABASE_URL);
+const db = drizzle(queryClient);
 
 export default db;

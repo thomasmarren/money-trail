@@ -28,7 +28,7 @@ export const filterSpend = ({
   transactions,
 }: {
   range: DateRangePickerValue;
-  transactions: TTransaction[];
+  transactions: (TTransaction & { type: TTransactionType })[];
 }) => {
   return (
     transactions

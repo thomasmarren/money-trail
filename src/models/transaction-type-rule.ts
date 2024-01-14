@@ -16,8 +16,7 @@ export class TransactionTypeRule extends BaseModel<
       .leftJoin(
         transactionTypes,
         eq(transactionTypes.id, transactionTypeRules.transactionTypeId)
-      )
-      .all();
+      );
 
     const result = all.map((row) => {
       const rule = row.transaction_type_rules;
