@@ -1,5 +1,5 @@
 import { DateRangePickerValue } from "@tremor/react";
-import { useTransactions } from "../../../hooks/useTransactions";
+import { useTransactionContext } from "../../contexts/TransactionsContext";
 import { CashFlowChart } from "../CashFlowChart";
 import { Summary } from "./Summary";
 import { filterSpend, filterIncome } from "./utils";
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export const CashFlow = () => {
-  const { all: transactions, range } = useTransactions();
+  const { transactions, range } = useTransactionContext();
 
   if (!transactions || transactions.length === 0) return <div>Loading...</div>;
 

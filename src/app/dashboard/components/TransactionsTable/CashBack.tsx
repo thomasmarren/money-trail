@@ -2,8 +2,8 @@ import { Flex, Button } from "@tremor/react";
 import { useState } from "react";
 import { TTransaction } from "../../../../models/transaction";
 import { HttpClient } from "../../../hooks/http-client";
-import { useTransactions } from "../../../hooks/useTransactions";
 import { Color } from "../../../styles";
+import { useTransactionContext } from "../../contexts/TransactionsContext";
 
 type Props = {
   transaction: TTransaction;
@@ -12,7 +12,7 @@ type Props = {
 export const CashBack = ({ transaction }: Props) => {
   const [editingCashBack, setEditingCashBack] = useState(false);
 
-  const { refetch } = useTransactions();
+  const { refetch } = useTransactionContext();
 
   if (!transaction.cashBackAmount) return null;
 
@@ -40,6 +40,7 @@ export const CashBack = ({ transaction }: Props) => {
           {[1, 2, 3, 4, 6].map((num) => {
             return (
               <Button
+                className="mr-2"
                 key={num}
                 variant="light"
                 onClick={() =>

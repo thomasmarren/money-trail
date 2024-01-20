@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { Transaction } from "../../../models/transaction";
 import fs from "fs";
 import { Account } from "../../../models/account";
+import { CashBackRule } from "../../../models/cash-back-rule";
 
 const parseAmount = (rawAmount: string) => {
   const string = rawAmount.replace(/[^\d.-]/g, "");
@@ -52,6 +53,8 @@ export async function POST() {
       `./transaction-files/${transactionFileName}`
     )) as RawTransaction[];
 
+    const cashBackRules = await new CashBackRule().all();
+
     for (const transaction of transactions) {
       await new Institution().upsert({
         id: transaction.Institution,
@@ -63,24 +66,30 @@ export async function POST() {
       });
 
       const amount = parseAmount(transaction.Amount);
-      const cashBackAmount = account.cashBackPercent
-        ? Math.round(amount * (account.cashBackPercent * 0.01))
-        : 0;
+
+      const { cashBackAmount, cashBackPercent } =
+        CashBackRule.calculateAmountForTransaction({
+          account,
+          amount,
+          cashBackRules,
+          transaction,
+        });
 
       const id = createId(transaction);
       await new Transaction().createOrUpdate({
         id,
         create: {
-          id,
           date: new Date(transaction.Date).toISOString(),
           amount,
           cashBackAmount,
+          cashBackPercent,
           accountId: transaction.Account,
           payload: transaction,
         },
         update: {
           amount,
           cashBackAmount,
+          cashBackPercent,
           payload: transaction,
         },
       });

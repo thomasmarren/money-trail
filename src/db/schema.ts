@@ -28,7 +28,7 @@ export enum TransactionTypeId {
 
 const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
-  name: text("name").default("New Account"),
+  name: text("name").notNull().default("New Account"),
   cashBackPercent: integer("cashBackPercent").default(0),
   institutionId: text("institutionId")
     .references(() => institutions.id)
@@ -37,10 +37,10 @@ const accounts = pgTable("accounts", {
 });
 
 const cashBackRules = pgTable("cash_back_rules", {
-  id: text("id").primaryKey(),
+  id: serial("id").primaryKey(),
   category: text("category"),
   descriptionRegex: text("descriptionRegex"),
-  cashBackPercent: integer("cashBackPercent").default(0),
+  cashBackPercent: integer("cashBackPercent").notNull().default(0),
   accountId: text("accountId")
     .references(() => accounts.id)
     .notNull(),

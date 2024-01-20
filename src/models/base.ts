@@ -70,7 +70,7 @@ export class BaseModel<
     update,
   }: {
     id: string;
-    create: TModel["$inferInsert"];
+    create: Omit<TModel["$inferInsert"], "id">;
     update: Partial<TModel["$inferInsert"]>;
   }) {
     let [record] = await db

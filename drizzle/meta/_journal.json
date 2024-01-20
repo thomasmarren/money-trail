@@ -15,6 +15,13 @@
       "when": 1705196894314,
       "tag": "0001_plain_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1705267600307,
+      "tag": "0002_sleepy_proemial_gods",
+      "breakpoints": true
     }
   ]
 }
