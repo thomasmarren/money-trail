@@ -4,9 +4,12 @@ import {
   DatePicker,
   DatePickerValue,
 } from "@tremor/react";
+import { Tooltip } from "antd";
 import { TAccount } from "../../../../models/account";
 import { TTransaction } from "../../../../models/transaction";
 import { TTransactionType } from "../../../../models/transaction-type";
+import { HttpClient } from "../../../hooks/http-client";
+import { useTransactionContext } from "../../contexts/TransactionsContext";
 import { Amount } from "./Amount";
 import { CashBack } from "./CashBack";
 import { Type } from "./Type";
@@ -16,6 +19,8 @@ type Props = {
 };
 
 export const Row = ({ transaction }: Props) => {
+  const { refetch } = useTransactionContext();
+
   const setDateValue = async ({
     id,
     date,
@@ -23,10 +28,7 @@ export const Row = ({ transaction }: Props) => {
     id: string;
     date: DatePickerValue;
   }) => {
-    await fetch(`api/transactions/${id}`, {
-      method: "PUT",
-      body: JSON.stringify({ date }),
-    });
+    await HttpClient.put(`api/transactions/${id}`, { date });
 
     refetch();
   };
@@ -50,7 +52,9 @@ export const Row = ({ transaction }: Props) => {
         {transaction.account.name}
       </TableCell>
       <TableCell className="text-left max-w-36 text-ellipsis overflow-hidden">
-        {transaction.payload.Description}
+        <Tooltip title={transaction.payload.Description}>
+          {transaction.payload.Description}
+        </Tooltip>
       </TableCell>
       <TableCell className="text-right">
         <Amount transaction={transaction} />

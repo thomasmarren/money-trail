@@ -36,12 +36,12 @@ export const Summary = ({ transactions, range, spend, income }: Props) => {
 
   const items = [
     {
-      title: "Spend",
-      metric: `${formatter.format(spend)}`,
-    },
-    {
       title: "Income",
       metric: `${formatter.format(income)}`,
+    },
+    {
+      title: "Spend",
+      metric: `${formatter.format(spend)}`,
     },
     {
       title: "Net",

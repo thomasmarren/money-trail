@@ -3,8 +3,6 @@
 import {
   Card,
   Flex,
-  MultiSelect,
-  MultiSelectItem,
   Table,
   TableBody,
   TableHead,
@@ -12,33 +10,41 @@ import {
   TableRow,
   Title,
 } from "@tremor/react";
-import { useTransactions } from "../../../hooks/useTransactions";
+import { TAccount } from "../../../../models/account";
+import { TTransaction } from "../../../../models/transaction";
+import { TTransactionType } from "../../../../models/transaction-type";
+import { useTransactionContext } from "../../contexts/TransactionsContext";
+import { Filter } from "./Filter";
 import { Row } from "./Row";
 
 export const TransactionsTable = () => {
-  const { posted, pending, filters, setFilters } = useTransactions();
+  const { transactions } = useTransactionContext();
+
+  const pending: (TTransaction & {
+    account: TAccount;
+    type: TTransactionType;
+  })[] = [];
+  const posted: (TTransaction & {
+    account: TAccount;
+    type: TTransactionType;
+  })[] = [];
+  transactions.forEach((transaction) => {
+    if (transaction.payload["Is Pending"] === "Yes") {
+      pending.push(transaction);
+    } else {
+      posted.push(transaction);
+    }
+  });
 
   if (!posted || !pending) return <div>Loading...</div>;
 
   return (
     <div>
-      <h2>Filter</h2>
-      <Flex
-        justifyContent="end"
-        style={{ maxWidth: "250px", marginBottom: "24px" }}
-      >
-        <MultiSelect
-          value={filters}
-          onValueChange={(values: string[]) => setFilters(values)}
-        >
-          <MultiSelectItem value="income">Income</MultiSelectItem>
-          <MultiSelectItem value="paycheck">Paycheck</MultiSelectItem>
-        </MultiSelect>
-      </Flex>
+      <Filter />
       <Card>
         <div>
           <Flex>
-            <Title>Transactions</Title>
+            <Title>Viewing {transactions.length} Transactions</Title>
           </Flex>
         </div>
         <Table className="mt-6">
