@@ -9,22 +9,31 @@ import {
   Title,
   Text,
 } from "@tremor/react";
-import { TAccount } from "../../../../models/account";
+import { DateTime } from "luxon";
 import { TTransaction } from "../../../../models/transaction";
-import { TTransactionType } from "../../../../models/transaction-type";
+import { useTransactions } from "../../contexts/TransactionsContext/useTransactions";
 import { filterSpend, filterIncome, filterBills } from "./utils";
 
 type Props = {
-  transactions: (TTransaction & {
-    account: TAccount;
-    type: TTransactionType;
-  })[];
+  transactions: TTransaction[];
   spend: number;
   income: number;
   range: DateRangePickerValue;
 };
 
 export const Summary = ({ transactions, range, spend, income }: Props) => {
+  const lastMonth = (() => {
+    if (!range.to || !range.from) return { to: range.to, from: range.from };
+
+    const { to, from } = range;
+    const newTo = DateTime.fromJSDate(to).minus({ month: 1 }).toJSDate();
+    const newFrom = DateTime.fromJSDate(from).minus({ month: 1 }).toJSDate();
+    return { to: newTo, from: newFrom };
+  })();
+
+  const { all: lastMonthTransactions } = useTransactions({
+    defaultRange: { to: lastMonth.to, from: lastMonth.from },
+  });
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -52,20 +61,9 @@ export const Summary = ({ transactions, range, spend, income }: Props) => {
     },
     {
       title: "Cash Back",
-      metric: `${formatter.format(totalCashBack / 1000)}`,
+      metric: `${formatter.format(totalCashBack / 100)}`,
     },
   ];
-
-  const lastMonth = (() => {
-    if (!range.to || !range.from) return null;
-
-    const { to, from } = range;
-    const newTo = new Date(to);
-    const newFrom = new Date(from);
-    newTo.setMonth(range.to.getMonth() - 1);
-    newFrom.setMonth(range.to.getMonth() - 1);
-    return { to: newTo, from: newFrom };
-  })();
 
   const lastMonthSpend = lastMonth
     ? filterSpend({
@@ -73,16 +71,17 @@ export const Summary = ({ transactions, range, spend, income }: Props) => {
           to: lastMonth.to,
           from: lastMonth.from,
         },
-        transactions,
+        transactions: lastMonthTransactions,
       })
     : 0;
+
   const lastMonthIncome = lastMonth
     ? filterIncome({
         range: {
           to: lastMonth.to,
           from: lastMonth.from,
         },
-        transactions,
+        transactions: lastMonthTransactions,
       })
     : 0;
 
@@ -102,14 +101,14 @@ export const Summary = ({ transactions, range, spend, income }: Props) => {
               </div>
               <div>
                 {["Spend", "Income"].includes(item.title) && (
-                  <Text className="text-xs">Last Month</Text>
+                  <Text className="text-xs">This Time Last Month</Text>
                 )}
                 {item.title === "Income" ? (
-                  <Badge color={incomeDiff > 0 ? "emerald" : "red"}>
+                  <Badge color={"emerald"}>
                     {formatter.format(lastMonthIncome)}
                   </Badge>
                 ) : ["Net", "Cash Back"].includes(item.title) ? null : (
-                  <Badge color={spendDiff < 0 ? "amber" : "green"}>
+                  <Badge color={spendDiff > 0 ? "amber" : "green"}>
                     {formatter.format(lastMonthSpend)}
                   </Badge>
                 )}

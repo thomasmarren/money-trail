@@ -18,3 +18,23 @@ export const get = (
   // If found value is undefined return default value; otherwise return the value
   return result === undefined ? defValue : result;
 };
+
+type Sortable<T> = {
+  [K in keyof T]: T[K] extends string | number | boolean ? T[K] : never;
+};
+
+export const orderBy = <T>(
+  arr: T[],
+  key: keyof Sortable<T>,
+  direction: "asc" | "desc" = "asc"
+): T[] => {
+  return arr.slice().sort((a, b) => {
+    if (a[key] === b[key]) {
+      return 0;
+    }
+
+    if (direction === "asc") return a[key] < b[key] ? -1 : 1;
+
+    return a[key] > b[key] ? -1 : 1;
+  });
+};

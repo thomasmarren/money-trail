@@ -1,24 +1,21 @@
-import { DateRangePickerValue } from "@tremor/react";
 import { useState, useMemo } from "react";
-import { TAccount } from "../../../../models/account";
 import { TTransaction } from "../../../../models/transaction";
-import { TTransactionType } from "../../../../models/transaction-type";
 import { get } from "../../../utils/nodash";
 import { useApiGet } from "../../../hooks/useApiGet";
 
-export const useTransactions = () => {
+export const useTransactions = ({
+  defaultRange = {},
+}: { defaultRange?: { from?: Date; to?: Date } } = {}) => {
   const [filters, setFilters] = useState<string[]>([]);
-  const [range, setRange] = useState<DateRangePickerValue>({
-    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    to: new Date(),
+  const [range, setRange] = useState<{ from: Date; to: Date }>({
+    from:
+      defaultRange.from ||
+      new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    to: defaultRange.to || new Date(),
   });
 
-  const { data: allTransactions, refetch } = useApiGet<
-    (TTransaction & {
-      account: TAccount;
-      type: TTransactionType;
-    })[]
-  >("/api/transactions");
+  const { data: allTransactions, refetch } =
+    useApiGet<TTransaction[]>("/api/transactions");
 
   const all = useMemo(() => {
     if (!allTransactions) return [];

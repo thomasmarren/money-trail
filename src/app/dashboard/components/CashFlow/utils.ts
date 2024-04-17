@@ -3,21 +3,46 @@ import { TTransactionType } from "./../../../../models/transaction-type";
 import { DateRangePickerValue } from "@tremor/react";
 import { TTransaction } from "../../../../models/transaction";
 
+export const isBill = (
+  transaction: TTransaction & { type: TTransactionType }
+) => {
+  return transaction.type?.id === TransactionTypeId.Bill;
+};
+
 export const isCCPayment = (
   transaction: TTransaction & { type: TTransactionType }
 ) => {
   return transaction.type?.id === TransactionTypeId.CCPayment;
 };
 
+export const isTransfer = (
+  transaction: TTransaction & { type: TTransactionType }
+) => {
+  return transaction.type?.id === TransactionTypeId.Transfer;
+};
+
+export const isAnnualFee = (
+  transaction: TTransaction & { type: TTransactionType }
+) => {
+  return transaction.type?.id === TransactionTypeId.AnnualFee;
+};
+
 export const transactionFilter = ({
   range,
   transaction,
+  extraFilters = [],
 }: {
   range: DateRangePickerValue;
   transaction: TTransaction & { type: TTransactionType };
+  extraFilters?: ((t: TTransaction & { type: TTransactionType }) => void)[];
 }) => {
   if (!range.to || !range.from) return false;
-  if (isCCPayment(transaction)) return false;
+  if (
+    isCCPayment(transaction) ||
+    isTransfer(transaction) ||
+    extraFilters.some((filter) => filter(transaction))
+  )
+    return false;
 
   const date = new Date(transaction.date);
   return date >= range.from && date <= range.to;

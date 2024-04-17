@@ -2,7 +2,7 @@ import { TAccount } from "../../../../models/account";
 import { TTransaction } from "../../../../models/transaction";
 import { TTransactionType } from "../../../../models/transaction-type";
 import { CurrencyFormatter } from "../../../utils/currency-formatter";
-import { isCCPayment } from "../CashFlow/utils";
+import { isAnnualFee, isCCPayment, isTransfer } from "../CashFlow/utils";
 
 export const Amount = ({
   transaction,
@@ -10,7 +10,17 @@ export const Amount = ({
   transaction: TTransaction & { account: TAccount; type: TTransactionType };
 }) => {
   const color = (() => {
-    if (isCCPayment(transaction)) return "text-amber-500";
+    if (isCCPayment(transaction)) {
+      return "text-amber-500";
+    }
+
+    if (isTransfer(transaction)) {
+      return "text-teal-500";
+    }
+
+    if (isAnnualFee(transaction)) {
+      return "text-red-500";
+    }
 
     if (transaction.amount < 0) return "text-lime-600";
 

@@ -1,15 +1,14 @@
 import { TransactionTypeId, transactionTypes } from "./../db/schema";
 import { TransactionTypeRule } from "./transaction-type-rule";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { BaseModel } from "./base";
 import { accounts, transactions } from "../db/schema";
-import { TransactionType } from "./transaction-type";
+import { TransactionType, TTransactionType } from "./transaction-type";
+import { TAccount } from "./account";
 
-export type TTransaction = typeof transactions.$inferSelect;
-
-type Include = {
-  account: string;
-  rules: string;
+export type TTransaction = typeof transactions.$inferSelect & {
+  account: TAccount;
+  type: TTransactionType;
 };
 
 export class Transaction extends BaseModel<typeof transactions> {
@@ -19,14 +18,21 @@ export class Transaction extends BaseModel<typeof transactions> {
 
   public async all() {
     const rules = await new TransactionTypeRule().allWithType();
-    const incomeType = await new TransactionType().findBy(
-      eq(transactionTypes.id, TransactionTypeId.Income)
+    const types = await new TransactionType().all();
+
+    const incomeType = types.find(
+      (type) => type.id === TransactionTypeId.Income
     );
 
     const all = await this.db
       .select()
       .from(transactions)
       .leftJoin(accounts, eq(accounts.id, transactions.accountId))
+      .leftJoin(
+        transactionTypes,
+        eq(transactionTypes.id, transactions.transactionTypeId)
+      )
+      .where(and(eq(accounts.hidden, false), eq(transactions.hidden, false)))
       .orderBy(desc(transactions.date), desc(transactions.amount));
 
     const result = all.map((row) => {
@@ -45,7 +51,15 @@ export class Transaction extends BaseModel<typeof transactions> {
         };
       }
 
-      return { ...transaction, account, type: rule?.type || { id: null } };
+      const type = types.find(
+        (type) => type.id === transaction.transactionTypeId
+      );
+
+      return {
+        ...transaction,
+        account,
+        type: type || rule?.type || { id: null },
+      };
     }, {});
 
     return result;

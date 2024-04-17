@@ -37,7 +37,7 @@ export const CashBack = ({ transaction }: Props) => {
     return (
       <Flex className="flex-col gap-2">
         <Flex>
-          {[1, 2, 3, 4, 6].map((num) => {
+          {[0, 1, 2, 3, 4, 5, 6].map((num) => {
             return (
               <Button
                 className="mr-2"

@@ -37,6 +37,9 @@ export const Filter = () => {
           <MultiSelectItem value="type.id:cc_payment">
             Credit Card Payment
           </MultiSelectItem>
+          <MultiSelectItem value="type.id:monthly_remaining">
+            Monthly Remaining
+          </MultiSelectItem>
           {accounts.map((account) => {
             return (
               <MultiSelectItem
