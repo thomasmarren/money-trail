@@ -26,7 +26,7 @@ export const CashFlowChart = ({
         data={chartdata}
         index="name"
         categories={["Income", "Spend"]}
-        colors={["emerald", "rose"]}
+        colors={["green", "red"]}
         valueFormatter={valueFormatter}
         yAxisWidth={60}
       />

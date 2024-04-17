@@ -88,8 +88,6 @@ export async function POST() {
         },
         update: {
           amount,
-          cashBackAmount,
-          cashBackPercent,
           payload: transaction,
         },
       });

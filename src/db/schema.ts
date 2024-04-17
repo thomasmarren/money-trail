@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { isNotNull, sql } from "drizzle-orm";
 import {
   pgTable,
   integer,
@@ -6,6 +6,7 @@ import {
   jsonb,
   serial,
   timestamp,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export type RawTransaction = {
@@ -20,10 +21,12 @@ export type RawTransaction = {
 };
 
 export enum TransactionTypeId {
+  AnnualFee = "annual_fee",
   Bill = "bill",
   CCPayment = "cc_payment",
   Spend = "spend",
   Income = "income",
+  Transfer = "transfer",
 }
 
 const accounts = pgTable("accounts", {
@@ -33,6 +36,9 @@ const accounts = pgTable("accounts", {
   institutionId: text("institutionId")
     .references(() => institutions.id)
     .notNull(),
+  hidden: boolean("hidden").default(false),
+  type: text("type").notNull().default("unknown"),
+  color: text("color").notNull().default("#000"),
   createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -64,6 +70,10 @@ const transactions = pgTable("transactions", {
   accountId: text("accountId")
     .references(() => accounts.id)
     .notNull(),
+  hidden: boolean("hidden").default(false),
+  transactionTypeId: text("transactionTypeId").references(
+    () => transactionTypes.id
+  ),
   createdAt: timestamp("createdAt").default(sql`CURRENT_TIMESTAMP`),
 });
 

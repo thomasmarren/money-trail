@@ -1,6 +1,8 @@
-import { DateRangePickerValue } from "@tremor/react";
+import { DateRangePickerValue, Grid } from "@tremor/react";
 import { useTransactionContext } from "../../contexts/TransactionsContext";
-import { CashFlowChart } from "../CashFlowChart";
+import { CashFlowChart } from "./CashFlowChart";
+import { MonthlySpend } from "./MonthlySpend";
+import { SpendByCard } from "./SpendByCard";
 import { Summary } from "./Summary";
 import { filterSpend, filterIncome } from "./utils";
 
@@ -24,7 +26,13 @@ export const CashFlow = () => {
         spend={spend}
         income={income}
       />
-      <CashFlowChart income={income} spend={spend} />
+      <Grid numItemsMd={2} numItemsLg={2} className="gap-6 mb-12">
+        <CashFlowChart income={income} spend={spend} />
+      </Grid>
+      <div className="mb-12">
+        <MonthlySpend />
+      </div>
+      <SpendByCard />
     </div>
   );
 };
